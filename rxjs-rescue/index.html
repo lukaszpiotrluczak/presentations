@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+     @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+     @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+     @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+     body { font-family: 'Droid Serif'; }
+     h1, h2, h3 {
+       font-family: 'Yanone Kaffeesatz';
+       font-weight: normal;
+     }
+     .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+     .fit img{
+      max-width: 15%;
+      max-height: 15%;
+     }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle   
+
+# Good Morning, Hello and Welcome!
+
+## RxJS to the rescue
+
+---
+
+# Some time ago
+
+I was asked to make simple feature at backoffice panel.
+
+--
+
+Business prepared description.
+
+--
+
+Backenders prepared all required API.
+
+--
+
+Backoffice was build with components framework.
+
+--
+
+I needed only to use components, connect to API and do simple logic.
+
+---
+
+# Some time ago
+
+I needed only to use components, connect to API and do simple logic.
+
+--
+
+Using ready-made components was not a problem.
+
+--
+
+Connecting the API was not problematic.
+
+--
+
+Remember? I needed only to use components, connect to API and do simple logic.
+
+--
+
+This simple logic was like walking through the valleys of hell
+
+---
+
+# Simple logic
+
+
+The functionality that was to be implemented was to allow for managing the list of services offered by the entity.
+
+--
+
+This list was supposed to be saved along with all the other changes (UX had a fantasy).
+
+--
+
+Items in the list could be added, removed, turned on and off, and details edited.
+
+It's really simple.
+
+--
+
+Anyone can write it.
+
+--
+
+And if he can't, he'll learn over the weekend and do it.
+
+---
+
+# Simple logic vs API
+
+--
+
+API designed and implemented by RED (REST Entity Developer)
+
+--
+
+The backoffice app had to determine the differences between the state from the database (query) and the target state.
+
+--
+
+Then, through api calls (post, put, delete) bring the state of the database to the target (one by one)
+
+--
+
+Not so easy already
+
+---
+
+# Simple logic not easy at all
+
+In addition to the need to specify individual commands, it was necessary to properly define the payload with which they were to be invoked.
+
+--
+
+And also needed proper error handling.
+
+--
+
+And the correct determination of the final value.
+
+
+---
+
+# Who if not me?
+
+--
+
+I rolled up my sleeves and got to work on the implementation
+
+--
+
+After four days I couldn't find myself in the logic I had written.
+
+--
+
+I decided to refactor.
+
+--
+
+After two days of Clean Code rewriting...
+
+--
+
+... the code was even less readable and the algorithm was completely misunderstood.
+
+--
+
+A different approach was needed.
+
+--
+
+*Especially since my supervisor was getting impatient*
+
+---
+class: center, middle 
+
+# RxJS to the rescue
+
+---
+class: center, middle 
+
+# Sync/Async x Single/Multiple
+
+---
+class: center, middle 
+
+# Streams
+
+---
+class: center, middle 
+
+# Observable streams
+
+---
+
+# Why observable streams?
+
+--
+
+Because every API request in async. 
+
+--
+
+When dealing with multiple ongoing requests if response to one arrives it can be further processed.
+
+--
+
+Code is describing flow - what to do instead of how to do
+
+---
+
+# Declarative + Imperative 
+
+--
+
+RxJS allows to divide algorithms into declarative and imperative parts
+
+--
+
+Pipes flow is described declarative.
+
+--
+
+Operators can be declarative or imperative.
+
+--
+
+In both cases operators can be considered as close to functional programming
+
+---
+class: center, middle 
+# Showtime ?
+
+---
+
+# API endpoints
+
+--
+
+```typescript
+class ServiceProviderServicesService {
+  public getServicesFor(serviceProviderId: number): Array<ServiceProviderService>;
+  public addService(serviceProviderId: number; service: ServiceProviderService): void;
+  public removeService(serviceProviderServideId: number): void;
+  public updateService(serviceProviderServideId: number; service: ServiceProviderService): void;
+  public setServiceStatus(serviceProviderServideId: number; isActive: boolean): void;  
+}
+```
+
+---
+
+# Async API endpoints
+
+--
+
+```typescript
+class ServiceProviderServicesService {
+  public getServicesFor(serviceProviderId: number): Promise<Array<ServiceProviderService>>;
+  public addService(serviceProviderId: number; service: ServiceProviderService): Promise<void>;
+  public removeService(serviceProviderServideId: number): Promise<void>;
+  public updateService(serviceProviderServideId: number; service: ServiceProviderService): Promise<void>;
+  public setServiceStatus(serviceProviderServideId: number; isActive: boolean): Promise<void>;  
+}
+```
+
+---
+
+# Observable API endpoints
+
+--
+
+```typescript
+class ServiceProviderServicesService {
+  public getServicesFor(serviceProviderId: number): Observable<Array<ServiceProviderService>>;
+  public addService(serviceProviderId: number; service: ServiceProviderService): Observable<void>;
+  public removeService(serviceProviderServideId: number): Observable<void>;
+  public updateService(serviceProviderServideId: number; service: ServiceProviderService): Observable<void>;
+  public setServiceStatus(serviceProviderServideId: number; isActive: boolean): Observable<void>;  
+}
+```
+
+---
+class: center, middle 
+# Wait a moment
+
+--
+
+Why Observable if it is Single?
+
+---
+# Cancelation Token 
+
+--
+
+Allows you to abort the request.
+
+--
+
+We won't get the result anymore and we don't need to have our own skip logic
+
+--
+
+When properly implemented on the server side, it allows you to reduce resource consumption - or at least reduce data transfer
+
+---
+
+# Observable instead of Promise for single values
+
+--
+
+It allows for easy integration with the rest of the flow.
+
+--
+
+It allows you to use the cancelation token and cancel the request anywhere.
+
+---
+
+# Query API
+
+--
+
+```typescript
+class ServiceProviderServicesService {
+  public getServicesFor(serviceProviderId: number): Observable<Array<ServiceProviderService>> {
+    return this.http
+      .get<Array<ServiceProviderService>>(`${this.apiUrl}/providers/${serviceProviderId}/services`)
+  }
+  
+  ...
+}
+```
+
+---
+class: center, middle 
+# Sometimes backend is busy
+
+
+---
+
+# Query API
+
+--
+
+```typescript
+class ServiceProviderServicesService {
+  public getServicesFor(serviceProviderId: number): Observable<Array<ServiceProviderService>> {
+    return this.http
+      .get<Array<ServiceProviderService>>(`${this.apiUrl}/providers/${serviceProviderId}/services`)
+      .pipe(
+        retry(3) // retry a failed request up to 3 times
+      );
+  }
+  
+  ...
+}
+```
+
+---
+
+# Command API
+
+--
+
+```typescript
+class ServiceProviderServicesService {
+  public addService(serviceProviderId: number; service: ServiceProviderService): Observable<void> {
+    return this.http
+      .post<void>(`${this.apiUrl}/providers/${serviceProviderId}/services`, service);
+  }
+
+  public removeService(serviceProviderServideId: number): Observable<void> {
+    return this.http
+      .delete<void>(`${this.apiUrl}/providers/services/${serviceProviderServideId}`);
+  }
+
+  public updateService(serviceProviderServideId: number; service: ServiceProviderService): Observable<void> {
+    return this.http
+      .put<void>(`${this.apiUrl}/providers/services/${serviceProviderServideId}`, service);
+  }
+
+  public setServiceStatus(serviceProviderServideId: number; isActive: boolean): Observable<void> {
+    return this.http
+      .put<void>(`${this.apiUrl}/providers/services/${serviceProviderServideId}/status`, service);    
+  }
+}
+```
+
+--
+
+Basically... nothing special
+
+---
+class: center, middle 
+# Here comes the magic
+
+---
+class: center, middle 
+# "Simple logic"
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  protected onProcessSave(): Observable<void> {
+    // ...
+    return of(void 0);
+  }
+}
+
+```
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  private #currentServices: Array<ServiceProviderService> = [];
+
+  protected get currentServices: Array<ServiceProviderService> {
+    return this.#currentServices;
+  }
+
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    const backendServices = this.serviceProviderServicesService.getServicesFor(this.serviceProviderId);
+
+    // ...
+
+    return of(void 0);
+  }
+}
+
+```
+
+---
+class: center, middle 
+# We need stream, we have stream
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  private #currentServices: Array<ServiceProviderService> = [];
+
+  protected get currentServices: Array<ServiceProviderService> {
+    return this.#currentServices;
+  }
+
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    const backendServices = this.serviceProviderServicesService.getServicesFor(this.serviceProviderId);
+
+    // ...
+
+    return backendServices;
+  }
+}
+
+```
+
+---
+class: center, middle 
+# Do something with stream
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  private #currentServices: Array<ServiceProviderService> = [];
+
+  protected get currentServices: Array<ServiceProviderService> {
+    return this.#currentServices;
+  }
+
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    
+    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
+      .pipe(
+        // ...
+      );
+  }
+}
+
+```
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  private #currentServices: Array<ServiceProviderService> = [];
+
+  protected get currentServices: Array<ServiceProviderService> {
+    return this.#currentServices;
+  }
+
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    
+    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
+      .pipe(
+        switchMap((services: Array<ServiceProviderService>) => {
+          // ...
+
+          return of(services);
+        })
+      );
+  }
+}
+
+```
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  private #currentServices: Array<ServiceProviderService> = [];
+
+  protected get currentServices: Array<ServiceProviderService> {
+    return this.#currentServices;
+  }
+
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    
+    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
+      .pipe(
+        switchMap((services: Array<ServiceProviderService>) => {
+          return forkJoin(
+            services.map((service: ServiceProviderService): Observable<void> => {
+              return of(service);
+            })
+          );
+        })
+      );
+  }
+}
+
+```
+
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    
+    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
+      .pipe(
+        switchMap((services: Array<ServiceProviderService>) => {
+          return forkJoin(
+            services.map((service: ServiceProviderService): Observable<void> => {
+              const currentService = this.getServiceByIdFrom(service.id, currentServices);
+
+              return this.createUpdateOrDelete(service, currentService);            
+            })
+          );
+        })
+      );
+  }
+
+  private createUpdateOrDelete(newService: ServiceProviderService, oldService: ServiceProviderService): 
+    Observable<void> {
+    if (!newService) {
+      return this.serviceProviderServicesService.removeService(oldService.id);
+    }
+    if (!oldService) {
+      return this.serviceProviderServicesService.addService(newService);
+    }
+    return this.serviceProviderServicesService.updateService(oldService.id, newService); 
+  }
+}
+
+```
+
+---
+class: center, middle 
+
+# What about state?
+
+---
+
+```typescript
+class ServiceProviderServicesComponent {
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    
+    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
+      .pipe(
+        switchMap((services: Array<ServiceProviderService>) => {
+          return forkJoin(
+            services.map((service: ServiceProviderService): Observable<void> => {
+              const currentService = this.getServiceByIdFrom(service.id, currentServices);
+
+              return this.createUpdateOrDelete(service, currentService);            
+            })
+          );
+        })
+      );
+  }
+
+  private createUpdateOrDelete(newService: ServiceProviderService, oldService: ServiceProviderService): 
+    Observable<void> {
+    if (!newService) {
+      return this.serviceProviderServicesService.removeService(oldService.id);
+    }
+    if (!oldService) {
+      return this.serviceProviderServicesService.addService(newService);
+    }
+    return forkJoin(
+      this.serviceProviderServicesService.updateService(oldService.id, newService),
+      this.serviceProviderServicesService.setServiceStatus(oldService.id, newService.isActive)
+    );
+  }
+}
+
+```
+
+---
+class: center, middle
+
+# Don't ask for an example without using RxJS
+
+--
+
+I don't know how to fit it in slides 😭
+
+---
+
+# What about error handling?
+
+--
+
+RxJs will handle error propagation.
+
+--
+
+Until we don't need specific error processing it should be enough.
+
+--
+
+# What about request cancelation?
+
+--
+
+Again, RxJS will handle it and propagate accordingly.
+
+---
+class: center, middle
+
+# But still one more thing to handle
+
+---
+
+# What about the application state if the write process does not go well?
+
+--
+
+In the case of this application, if an error occurs, it will be forced to reload the entire state.
+
+--
+
+But in fact, the correct behavior is to ensure that we have a correct and up-to-date state after processing is complete.
+
+--
+
+Let's try to improve it!
+
+---
+class: center, middle
+
+# Any ideas how?
+
+---
+class: center, middle
+# Sometimes the simplest solutions are good enough
+
+---
+
+```typescript
+class ServiceProviderServicesComponent {
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    
+    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
+      .pipe(
+        switchMap((services: Array<ServiceProviderService>) => {
+          return forkJoin(
+            services.map((service: ServiceProviderService): Observable<void> => {
+              const currentService = this.getServiceByIdFrom(service.id, currentServices);
+
+              return this.createUpdateOrDelete(service, currentService);            
+            })
+          );
+        }),
+        tap(() => {
+          firstValueFrom(
+            this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)          
+          ).then(
+            (services: Array<ServiceProviderService>) => this.currentServices = services
+          )
+        })
+      );
+  }
+```
+
+---
+class: center, middle
+# Sometimes the simplest solutions are good enough
+
+# Quite often smart solutions are bad enough
+
+---
+class: center, middle
+
+
+# It's time for questions!
+## Good ones and bad ones too!
+
+.center.fit[![Profile picture](https://lh4.googleusercontent.com/BBchnd7D0cwR4tFFOH9UJK7werMfopO1RNR8MKhiQVTJkTYk4XPQjaumzDjLrnBDkLA=w2400)]
+### Łukasz Piotr Łuczak, MSc
+
+Twitter - https://twitter.com/lukefrontlander
+
+Linkedin - https://linkedin.com/in/lukaszpiotrluczak
+
+Github - https://github.com/lukaszpiotrluczak
+
+---
+class: center, middle
+
+
+# Thank you!
+
+.center.fit[![Profile picture](https://lh4.googleusercontent.com/BBchnd7D0cwR4tFFOH9UJK7werMfopO1RNR8MKhiQVTJkTYk4XPQjaumzDjLrnBDkLA=w2400)]
+### Łukasz Piotr Łuczak, MSc
+
+Twitter - https://twitter.com/lukefrontlander
+
+Linkedin - https://linkedin.com/in/lukaszpiotrluczak
+
+Github - https://github.com/lukaszpiotrluczak
+
+## Come and say hi!
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+     var slideshow = remark.create({
+      ratio: '16:9'
+     });
+    </script>
+  </body>
+</html>
