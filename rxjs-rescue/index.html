@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Title</title>
+    <title>Reactive means SOLID</title>
     <meta charset="utf-8">
     <style>
      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
@@ -14,19 +14,72 @@
        font-weight: normal;
      }
      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+     .fitw img {
+      max-width: 80%;
+      max-height: 80%;
+     }
      .fit img{
       max-width: 15%;
       max-height: 15%;
      }
+     div.my-header {
+    /* background-color: #F77A00; */
+    /* background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ffb76b), color-stop(0%,#ffa73d), color-stop(0%,#ffffff), color-stop(10%,#ffffff), color-stop(25%,#F77A00), color-stop(100%,#F77A00)); */
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    height: 30px;
+    width: 100%;
+    text-align: right;
+}
+
+div.my-footer {
+    /* background-color: #F77A00; */
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    height: 20px;
+    width: 100%;
+}
+
+div.my-footer > div {
+    font-size: 20px;
+    position: absolute;
+    left: 20px;
+    bottom: 12px;
+    display: flex;
+    column-gap: 40px;
+}
+
+div.my-footer > div span {
+  display: flex;
+  align-items: center;
+  color: #7f7f7f;
+  column-gap: 10px;
+}
+
+div.my-footer > div span img {
+
+}
+
+div.my-footer a {
+  color: #7f7f7f;
+  text-decoration: none;
+}
     </style>
   </head>
   <body>
     <textarea id="source">
+layout: true
+<div class="my-header"><a href="https://softwarehut.com/" target="_blank"><img src="assets/softwarehut.png" style="height: 30px;"/></a></div>
+<div class="my-footer"><div><a href="https://twitter.com/lukefrontlander"><img src="assets/twitter.svg" style="height: 1rem;"  /> @lukefrontlander</a><span style="font-size: 0.6em;"">&copy; 2022 Łukasz Piotr Łuczak, MSc </span></div></div>
+
+---
 class: center, middle   
 
 # Good Morning, Hello and Welcome!
 
-## RxJS to the rescue
+## Reactive means SOLID
 
 ---
 
@@ -169,15 +222,50 @@ class: center, middle
 
 # RxJS to the rescue
 
+
+---
+class: center, middle
+
+# Reactive programming
+
+---
+class: center, middle
+
+# Types of reactivity
+
+--
+
+observable streams (e.g. ReactiveX)
+
+--
+
+"views" (e.g. React)
+
+--
+
+precompiled (e.g. Svelte)
+
+--
+
+and many more different approaches
+
 ---
 class: center, middle 
 
 # Sync/Async x Single/Multiple
 
+--
+
+.center.fitw[![Profile picture](assets/observables.png)]
+
 ---
 class: center, middle 
 
 # Streams
+
+--
+
+.center.fitw[![Profile picture](assets/graph.png)]
 
 ---
 class: center, middle 
@@ -281,6 +369,7 @@ class: center, middle
 Why Observable if it is Single?
 
 ---
+
 # Cancelation Token 
 
 --
@@ -340,9 +429,9 @@ class ServiceProviderServicesService {
   public getServicesFor(serviceProviderId: number): Observable<Array<ServiceProviderService>> {
     return this.http
       .get<Array<ServiceProviderService>>(`${this.apiUrl}/providers/${serviceProviderId}/services`)
-      .pipe(
-        retry(3) // retry a failed request up to 3 times
-      );
+*      .pipe(
+*        retry(3) // retry a failed request up to 3 times
+*      );
   }
   
   ...
@@ -416,8 +505,8 @@ class ServiceProviderServicesComponent {
   }
 
   protected onProcessSave(): Observable<void> {
-    const currentServices = this.currentServices;
-    const backendServices = this.serviceProviderServicesService.getServicesFor(this.serviceProviderId);
+*    const currentServices = this.currentServices;
+*    const backendServices = this.serviceProviderServicesService.getServicesFor(this.serviceProviderId);
 
     // ...
 
@@ -448,7 +537,7 @@ class ServiceProviderServicesComponent {
 
     // ...
 
-    return backendServices;
+*    return backendServices;
   }
 }
 
@@ -472,9 +561,36 @@ class ServiceProviderServicesComponent {
   protected onProcessSave(): Observable<void> {
     const currentServices = this.currentServices;
     
+*    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
+*      .pipe(
+*        // ...
+*      );
+  }
+}
+
+```
+
+---
+
+```typescript
+
+class ServiceProviderServicesComponent {
+  private #currentServices: Array<ServiceProviderService> = [];
+
+  protected get currentServices: Array<ServiceProviderService> {
+    return this.#currentServices;
+  }
+
+  protected onProcessSave(): Observable<void> {
+    const currentServices = this.currentServices;
+    
     return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
       .pipe(
-        // ...
+*        switchMap((services: Array<ServiceProviderService>) => {
+*          // ...
+*
+*          return of(services);
+        })
       );
   }
 }
@@ -498,37 +614,10 @@ class ServiceProviderServicesComponent {
     return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
       .pipe(
         switchMap((services: Array<ServiceProviderService>) => {
-          // ...
-
-          return of(services);
-        })
-      );
-  }
-}
-
-```
-
----
-
-```typescript
-
-class ServiceProviderServicesComponent {
-  private #currentServices: Array<ServiceProviderService> = [];
-
-  protected get currentServices: Array<ServiceProviderService> {
-    return this.#currentServices;
-  }
-
-  protected onProcessSave(): Observable<void> {
-    const currentServices = this.currentServices;
-    
-    return this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)
-      .pipe(
-        switchMap((services: Array<ServiceProviderService>) => {
-          return forkJoin(
-            services.map((service: ServiceProviderService): Observable<void> => {
-              return of(service);
-            })
+*          return forkJoin(
+*            services.map((service: ServiceProviderService): Observable<void> => {
+*              return of(service);
+*            })
           );
         })
       );
@@ -551,25 +640,25 @@ class ServiceProviderServicesComponent {
         switchMap((services: Array<ServiceProviderService>) => {
           return forkJoin(
             services.map((service: ServiceProviderService): Observable<void> => {
-              const currentService = this.getServiceByIdFrom(service.id, currentServices);
+*              const currentService = this.getServiceByIdFrom(service.id, currentServices);
 
-              return this.createUpdateOrDelete(service, currentService);            
+*              return this.createUpdateOrDelete(service, currentService);            
             })
           );
         })
       );
   }
 
-  private createUpdateOrDelete(newService: ServiceProviderService, oldService: ServiceProviderService): 
-    Observable<void> {
-    if (!newService) {
-      return this.serviceProviderServicesService.removeService(oldService.id);
-    }
-    if (!oldService) {
-      return this.serviceProviderServicesService.addService(newService);
-    }
-    return this.serviceProviderServicesService.updateService(oldService.id, newService); 
-  }
+*  private createUpdateOrDelete(newService: ServiceProviderService, oldService: ServiceProviderService): 
+*    Observable<void> {
+*    if (!newService) {
+*      return this.serviceProviderServicesService.removeService(oldService.id);
+*    }
+*    if (!oldService) {
+*      return this.serviceProviderServicesService.addService(newService);
+*    }
+*    return this.serviceProviderServicesService.updateService(oldService.id, newService); 
+*  }
 }
 
 ```
@@ -608,10 +697,10 @@ class ServiceProviderServicesComponent {
     if (!oldService) {
       return this.serviceProviderServicesService.addService(newService);
     }
-    return forkJoin(
-      this.serviceProviderServicesService.updateService(oldService.id, newService),
-      this.serviceProviderServicesService.setServiceStatus(oldService.id, newService.isActive)
-    );
+*    return forkJoin(
+*      this.serviceProviderServicesService.updateService(oldService.id, newService),
+*      this.serviceProviderServicesService.setServiceStatus(oldService.id, newService.isActive)
+*    );
   }
 }
 
@@ -694,13 +783,13 @@ class ServiceProviderServicesComponent {
             })
           );
         }),
-        tap(() => {
-          firstValueFrom(
-            this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)          
-          ).then(
-            (services: Array<ServiceProviderService>) => this.currentServices = services
-          )
-        })
+*        tap(() => {
+*          firstValueFrom(
+*            this.serviceProviderServicesService.getServicesFor(this.serviceProviderId)          
+*          ).then(
+*            (services: Array<ServiceProviderService>) => this.currentServices = services
+*          )
+*        })
       );
   }
 ```
@@ -710,6 +799,361 @@ class: center, middle
 # Sometimes the simplest solutions are good enough
 
 # Quite often smart solutions are bad enough
+
+---
+class: center, middle
+
+# One more example
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+*  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+*    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+*    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+*    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+*    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+*      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+*      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+*      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+*        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+*        map(books => new book.SearchCompleteAction(books)),
+        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+
+# Search query effect for NgRx
+
+```typescript
+export class BookEffects {
+  search$: Observable<Action> = this.actions$.pipe(
+    ofType(ActionTypes.SEARCH),
+    debounceTime(300),
+    map(toPayload),
+    switchMap(query => {
+      if (query === '') { return empty(); }
+
+      const nextSearch$ = this.actions$.ofType(book.ActionTypes.SEARCH).pipe(skip(1));
+
+      return this.googleBooks.searchBooks(query).pipe(
+        takeUntil(nextSearch$),
+        map(books => new book.SearchCompleteAction(books)),
+*        catch(() => of(new book.SearchCompleteAction([]))));
+    });
+
+    constructor(private actions$: Actions, private googleBooks: GoogleBooksService) { }
+}
+```
+
+---
+class: center, middle
+
+# Is that SOLID ?
+
+---
+
+# SOLID
+
+--
+
+- Single responsibility
+
+--
+
+- Open-closed
+
+--
+
+- Liskov substitution
+
+--
+
+- Interface segregation
+
+--
+
+- Dependency inversion
+
+---
+
+# Single responsibility
+
+--
+
+> A class should have one, and only one, reason to change
+
+--
+
+> Only do one thing was taken from imperative programming in the first place. Having small, focused functions is good.
+
+---
+
+# Open-closed 
+
+--
+
+> You should be able to extend a classes behavior, without modifying it
+
+--
+
+> Allowing you to change behaviors without modifying code is good. Functional Programming uses higher-order functions more than inheritance, but the principle holds.
+
+---
+
+# Liskov substitution
+
+--
+
+> Derived classes must be substitutable for their base classes
+
+--
+
+> Abiding by some interface contract is just as good in functional programming as in object-oriented. If a sort function takes a comparator, then you would expect the '0 is equals, less than provides negative results, greater than positive results' behavior.
+
+---
+
+# Interface segregation
+
+--
+
+> Make fine grained interfaces that are client specific
+
+--
+
+> Most functional languages still have structs. Specifying the smallest set of data required by a function is still good practice. Requiring the least specific interface to the data is still good practice.
+
+---
+
+# Dependency inversion
+
+--
+
+> Depend on abstractions, not on concretions
+
+--
+
+> Specifying parameters to a function (or a higher-order function to retrieve them) rather than hard coding the function to go get some value is just as good in functional programming as in object-oriented.
+
+
+---
+class: center, middle
+
+# Is that SOLID ?
+
+---
+class: center, middle
+
+# IT depends!
 
 ---
 class: center, middle
@@ -730,6 +1174,22 @@ Github - https://github.com/lukaszpiotrluczak
 ---
 class: center, middle
 
+### Last but not least
+
+--
+
+## Special thanks to
+
+--
+
+.center.fit[[![Profile picture](assets/heyedu.svg)](https://go.heyedu.xyz/join?ref=a01e5f00-e955-468c-9aee-24c8879934f5)]
+
+--
+
+## [Konrad Kokosa](https://github.com/kkokosa)
+
+---
+class: center, middle
 
 # Thank you!
 
@@ -749,7 +1209,8 @@ Github - https://github.com/lukaszpiotrluczak
     </script>
     <script>
      var slideshow = remark.create({
-      ratio: '16:9'
+      ratio: '16:9',
+      highlightLines: true
      });
     </script>
   </body>
